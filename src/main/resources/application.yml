@@ -13,3 +13,7 @@ jwt:
     converter:
       resource-id: spring-rest-api
       principle-attribute: preferred_username
+
+token:
+  url: http://localhost:8080/realms/Spring/protocol/openid-connect/token
+  client-id: spring-rest-api
