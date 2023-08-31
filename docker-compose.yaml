@@ -1,0 +1,68 @@
+version: "3.7"
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:22.0.1
+    command: start-dev
+    environment:
+      - KEYCLOAK_REALM=Spring
+      - KEYCLOAK_USER=admin
+      - KEYCLOAK_PASSWORD=password
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=password
+      - db_vendor=MYSQL
+      - DB_ADDR=mysqldb
+      - DB_DATABASE=key_cloak_db
+      - DB_USER=dylan
+      - DB_PASSWORD=password
+      - DB_PORT=3306
+    depends_on:
+      - mysqldb
+    ports:
+      - "8800:8080"
+    networks:
+      - aws-spring-master
+    volumes:
+      - keycloak_data:/opt/jboss/keycloak/standalone/data
+
+  app_service:
+    build: .
+    restart: always
+    ports:
+      - "9000:9000"
+    networks:
+      - aws-spring-master
+    environment:
+      - spring.security.oauth2.resourceserver.jwt.issuer-uri=http://keycloak:8080/realms/Spring
+      - spring.security.oauth2.resourceserver.jwt.jwk-set-uri=http://keycloak:8080/realms/Spring/protocol/openid-connect/certs
+      - jwt.auth.converter.resource-id=spring-rest-api
+      - jwt.auth.converter.principle-attribute=preferred_username
+      - token.url=http://keycloak:8080/realms/Spring/protocol/openid-connect/token
+      - token.client-id=spring-rest-api
+    depends_on:
+      - keycloak
+    volumes:
+      - .m2:/root/.m2
+
+  mysqldb:
+    image: "mysql:5.7"
+    restart: always
+    ports:
+      - "3309:3306"
+    networks:
+      - aws-spring-master
+    environment:
+       MYSQL_DATABASE: key_cloak_db
+       MYSQL_USER: dylan
+       MYSQL_PASSWORD: password
+       MYSQL_ROOT_PASSWORD: password
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  keycloak_data:
+  mysql_data:
+
+networks:
+  aws-spring-master:
+    driver: bridge

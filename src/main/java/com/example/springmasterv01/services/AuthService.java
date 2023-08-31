@@ -29,6 +29,7 @@ public class AuthService extends  CoreService{
         ObjectMapper objectMapper = new ObjectMapper();
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
         map.add("grant_type", "password");
+        System.out.println("Used client_id is: " + clientId);
         map.add("client_id", clientId);
         map.add("username", model.getUsername());
         map.add("password", model.getPassword());
@@ -39,6 +40,7 @@ public class AuthService extends  CoreService{
         HttpEntity<MultiValueMap<String, String>> requestBodyFormUrlEncoded = new HttpEntity<>(map, headers);
         ResponseEntity<JsonNode> responseEntity = null;
         try {
+            System.out.println("Used url is: " + url);
             responseEntity = restTemplate.postForEntity(url, requestBodyFormUrlEncoded, JsonNode.class);
         } catch (Exception e) {
             ObjectNode jsonNode = objectMapper.createObjectNode();
